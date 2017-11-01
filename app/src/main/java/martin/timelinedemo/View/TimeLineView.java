@@ -209,29 +209,6 @@ public class TimeLineView extends ScrollView {
      * @return
      */
     private String getTimeByPostion(int scrollY) {
-//        long scrollDis = (long) (scrollY - firstScrollPos);//与第一次停止位置，之间的差距
-//        long scrollSecond = 0;
-//
-//        if (list.contains(scrollHour)) {//大刻度,1个dp5秒
-//            scrollSecond = 3600 * scrollDis / maxScale;//滚动的秒数
-//            Log.i("DJC", "---------------------------------");
-//        } else {//小刻度，1个dp20秒
-//            Log.i("DJC", "*********************************");
-//            scrollSecond = 3600 * scrollDis / minScale;
-//        }
-//
-//        long scrollMillion = baseScrollMillion + scrollSecond * 1000;
-//        Log.i("DJC", "scrollMillion+++++++++" + scrollMillion);
-//        String scrollTime = Utils.stampToDate(scrollMillion);
-//        Log.i("DJC", "scrollTime+++++++++" + scrollTime);
-//
-//
-//        stopTime = scrollTime.split(" ")[1];
-//        if (null != onScrollListener) {
-//            onScrollListener.onScroll(stopTime);
-//        }
-//        scrollHour = Integer.parseInt(scrollTime.split(" ")[1].split(":")[0]);
-//        Log.i("DJC", "scrollHour++++++++++" + scrollHour);
         long scrollSecond = 0;
         if (scrollHour < 10) {
             scrollHourStr = "0" + scrollHour;
