@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
         minScale = Utils.dip2px(mContext, 60);
         //大刻度
         maxScale = Utils.dip2px(mContext, 200);
-        //指示线距离顶部的位置
+        //指示线距离顶部的位置,与0点距离顶部的高度一致，即minScale
         indicateLine = Utils.dip2px(mContext, 60);
 
         //为了保证指示线可以指示到24点，刻度需要大于24

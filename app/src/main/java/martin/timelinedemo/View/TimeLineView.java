@@ -67,13 +67,13 @@ public class TimeLineView extends ScrollView {
         scaleLineHeight = Utils.dip2px(context, 1);
         //设置字体的大小
         textSize = 15;
-        //设置刻度值的高度
+        //设置刻度值字体的高度
         scaleHeight = Utils.dip2px(context, 20);
         //小刻度
         minScale = Utils.dip2px(mContext, 60);
         //大刻度
         maxScale = Utils.dip2px(mContext, 200);
-        //指示线距离顶部的位置
+        //指示线距离顶部的位置,与0点距离顶部的高度一致，即minScale
         indicateLine = Utils.dip2px(mContext, 60);
     }
 
@@ -100,9 +100,9 @@ public class TimeLineView extends ScrollView {
         topPos = map.get(0) - indicateLine;
         bottomPos = map.get(24) - indicateLine;
 
-        String time ="2017-11-1 12:00:00";
+//        String time ="2017-11-1 12:00:00";
 
-        String[] currentTimeSplit = time.split(" ");
+        String[] currentTimeSplit = currentTime.split(" ");
         currentDate = currentTimeSplit[0];
         String[] timeSplit = currentTimeSplit[1].split(":");
 
@@ -260,7 +260,7 @@ public class TimeLineView extends ScrollView {
                 if (upY != downY) {
                     Message msg = handler.obtainMessage();
                     msg.what = 1;
-                    handler.sendMessageDelayed(msg, 5);
+                    handler.sendMessageDelayed(msg, 100);
                 }
                 break;
         }
@@ -279,7 +279,7 @@ public class TimeLineView extends ScrollView {
                             onScrollListener.onScrollStop(stopTime, lastY);
                         }
                     } else {
-                        handler.sendEmptyMessageDelayed(1, 200);
+                        handler.sendEmptyMessageDelayed(1, 100);
                         lastY = getScrollY();
                     }
                     break;
