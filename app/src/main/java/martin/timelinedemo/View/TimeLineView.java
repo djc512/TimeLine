@@ -2,8 +2,10 @@ package martin.timelinedemo.View;
 
 import android.content.Context;
 import android.os.Handler;
+import android.os.Message;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -26,7 +28,6 @@ public class TimeLineView extends ScrollView {
     private Context mContext;
     private int scaleLineWidth;
     private int scaleLineHeight;
-    private FrameLayout lineContainer;
     private int scaleHeight;
     private int textSize;
     private int minScale;
@@ -39,6 +40,7 @@ public class TimeLineView extends ScrollView {
     private long baseScrollMillion;
     private float topPos;
     private float bottomPos;
+    private String currentDate;
 
     public TimeLineView(Context context) {
         super(context);
@@ -70,7 +72,7 @@ public class TimeLineView extends ScrollView {
         //小刻度
         minScale = Utils.dip2px(mContext, 60);
         //大刻度
-        maxScale = Utils.dip2px(mContext, 240);
+        maxScale = Utils.dip2px(mContext, 200);
         //指示线距离顶部的位置
         indicateLine = Utils.dip2px(mContext, 60);
     }
@@ -78,14 +80,17 @@ public class TimeLineView extends ScrollView {
     private Map<Integer, Integer> map;
     private List<Integer> list;//存放的大刻度
     private int scrollHour = -1;
+    private String currentTime;
 
     /**
      * 数据的初始化
      *
      * @param map
      * @param list
+     * @param currentTime
      */
-    public void initData(Map<Integer, Integer> map, List<Integer> list) {
+    public void initData(Map<Integer, Integer> map, List<Integer> list, String currentTime) {
+        this.currentTime = currentTime;
         this.list = list;
         this.map = map;
         setScaleLine();
@@ -95,11 +100,11 @@ public class TimeLineView extends ScrollView {
         topPos = map.get(0) - indicateLine;
         bottomPos = map.get(24) - indicateLine;
 
-        String time = "2017-10-31 02:00:00";
-        //第一次滚动的时间戳
-        baseScrollMillion = Utils.dateToStamp(time);
-        Log.i("DJC", "baseScrollMillion++++++++++" + baseScrollMillion);
-        String[] timeSplit = time.split(" ")[1].split(":");
+        String time ="2017-11-1 12:00:00";
+
+        String[] currentTimeSplit = time.split(" ");
+        currentDate = currentTimeSplit[0];
+        String[] timeSplit = currentTimeSplit[1].split(":");
 
         firsthour = Integer.parseInt(timeSplit[0]);
         firstminute = Integer.parseInt(timeSplit[1]);
@@ -178,7 +183,6 @@ public class TimeLineView extends ScrollView {
         return totalPos;
     }
 
-
     @Override
     protected void onScrollChanged(int x, int y, int oldx, int oldy) {
         super.onScrollChanged(x, y, oldx, oldy);
@@ -193,37 +197,61 @@ public class TimeLineView extends ScrollView {
     }
 
     private String stopTime;
+    private String scrollHourStr;
 
     /**
      * 根据滚动的距离计算时间
+     * 以当前整点的时间作为基础，判断是大刻度还是小刻度，获取整点在时间轴中的位置及对应的时间戳
+     * scrollY减去基础时间的位置，获取偏移位置，计算偏移的秒数
+     * 整点的时间戳加上偏移秒数计算当前滚动的时间
      *
      * @param scrollY
      * @return
      */
     private String getTimeByPostion(int scrollY) {
-        long scrollDis = (long) (scrollY - firstScrollPos);//与第一次停止位置，之间的差距
+//        long scrollDis = (long) (scrollY - firstScrollPos);//与第一次停止位置，之间的差距
+//        long scrollSecond = 0;
+//
+//        if (list.contains(scrollHour)) {//大刻度,1个dp5秒
+//            scrollSecond = 3600 * scrollDis / maxScale;//滚动的秒数
+//            Log.i("DJC", "---------------------------------");
+//        } else {//小刻度，1个dp20秒
+//            Log.i("DJC", "*********************************");
+//            scrollSecond = 3600 * scrollDis / minScale;
+//        }
+//
+//        long scrollMillion = baseScrollMillion + scrollSecond * 1000;
+//        Log.i("DJC", "scrollMillion+++++++++" + scrollMillion);
+//        String scrollTime = Utils.stampToDate(scrollMillion);
+//        Log.i("DJC", "scrollTime+++++++++" + scrollTime);
+//
+//
+//        stopTime = scrollTime.split(" ")[1];
+//        if (null != onScrollListener) {
+//            onScrollListener.onScroll(stopTime);
+//        }
+//        scrollHour = Integer.parseInt(scrollTime.split(" ")[1].split(":")[0]);
+//        Log.i("DJC", "scrollHour++++++++++" + scrollHour);
         long scrollSecond = 0;
-
-        if (list.contains(scrollHour)) {//大刻度,1个dp5秒
-            scrollSecond = 3600 * scrollDis / maxScale;//滚动的秒数
-            Log.i("DJC", "---------------------------------");
-        } else {//小刻度，1个dp20秒
-            Log.i("DJC", "*********************************");
-            scrollSecond = 3600 * scrollDis / minScale;
+        if (scrollHour < 10) {
+            scrollHourStr = "0" + scrollHour;
+        } else {
+            scrollHourStr = "" + scrollHour;
+        }
+        long scrollHourMillion = Utils.dateToStamp(currentDate + " " + scrollHourStr + ":" + "00" + ":" + "00");//以当前整点的时间戳作为基准
+        int disScroll = scrollY + indicateLine - map.get(scrollHour);
+        if (list.contains(scrollHour)) {//大刻度
+            scrollSecond = 3600 * disScroll / maxScale;//滚动的秒数
+        } else {
+            scrollSecond = 3600 * disScroll / minScale;
         }
 
-        long scrollMillion = baseScrollMillion + scrollSecond * 1000;
-        Log.i("DJC", "scrollMillion+++++++++" + scrollMillion);
-        String scrollTime = Utils.stampToDate(scrollMillion);
-        Log.i("DJC", "scrollTime+++++++++" + scrollTime);
-
-
+        String scrollTime = Utils.stampToDate(scrollHourMillion + scrollSecond * 1000);
         stopTime = scrollTime.split(" ")[1];
         if (null != onScrollListener) {
-            onScrollListener.onScroll(stopTime);
+            onScrollListener.onScroll(stopTime, scrollY);
         }
         scrollHour = Integer.parseInt(scrollTime.split(" ")[1].split(":")[0]);
-        Log.i("DJC", "scrollHour++++++++++" + scrollHour);
         return scrollTime;
     }
 
@@ -235,6 +263,50 @@ public class TimeLineView extends ScrollView {
     private OnScrollListener onScrollListener;
 
     public interface OnScrollListener {
-        void onScroll(String time);
+        void onScroll(String time, int postion);
+
+        void onScrollStop(String time, int postion);
     }
+
+    private float downY;
+
+    @Override
+    public boolean onTouchEvent(MotionEvent ev) {
+
+        int action = ev.getAction();
+        switch (action) {
+            case MotionEvent.ACTION_DOWN:
+                downY = ev.getY();
+                break;
+            case MotionEvent.ACTION_UP:
+                float upY = ev.getY();
+                if (upY != downY) {
+                    Message msg = handler.obtainMessage();
+                    msg.what = 1;
+                    handler.sendMessageDelayed(msg, 5);
+                }
+                break;
+        }
+        return super.onTouchEvent(ev);
+    }
+
+    private int lastY;
+    private Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            int what = msg.what;
+            switch (what) {
+                case 1:
+                    if (lastY == getScrollY()) {
+                        if (null != onScrollListener) {
+                            onScrollListener.onScrollStop(stopTime, lastY);
+                        }
+                    } else {
+                        handler.sendEmptyMessageDelayed(1, 200);
+                        lastY = getScrollY();
+                    }
+                    break;
+            }
+        }
+    };
 }

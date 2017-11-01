@@ -45,13 +45,14 @@ public class MainActivity extends AppCompatActivity {
         list.add(0);
         list.add(1);
         list.add(5);
-        list.add(6);
+        list.add(7);
+        list.add(10);
         list.add(22);
         list.add(23);
         //小刻度
         minScale = Utils.dip2px(mContext, 60);
         //大刻度
-        maxScale = Utils.dip2px(mContext, 240);
+        maxScale = Utils.dip2px(mContext, 200);
         //指示线距离顶部的位置
         indicateLine = Utils.dip2px(mContext, 60);
 
@@ -66,18 +67,36 @@ public class MainActivity extends AppCompatActivity {
                 map.put(i, scalePos);
             }
         }
-        timeLineView.initData(map, list);
+
+        String currentTime = Utils.stampToDate(System.currentTimeMillis());
+        timeLineView.initData(map, list,currentTime);
     }
 
     private void setListener() {
 
         timeLineView.setOnScrollListener(new TimeLineView.OnScrollListener() {
             @Override
-            public void onScroll(final String time) {
+            public void onScroll(final String time, final int postion) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         tv_time.setText(time);
+                    }
+                });
+            }
+
+            @Override
+            public void onScrollStop(final String time, final int postion) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (postion <= map.get(0) - indicateLine) {
+                            tv_time.setText("00:00:00");
+                        } else if (postion >= map.get(24) - indicateLine) {
+                            tv_time.setText("24:00:00");
+                        } else {
+                            tv_time.setText(time);
+                        }
                     }
                 });
             }
