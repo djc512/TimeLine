@@ -9,9 +9,11 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -72,7 +74,7 @@ public class TimeLineView extends ScrollView {
         //小刻度
         minScale = Utils.dip2px(mContext, 60);
         //大刻度
-        maxScale = Utils.dip2px(mContext, 200);
+        maxScale = Utils.dip2px(mContext, 300);
         //指示线距离顶部的位置,与0点距离顶部的高度一致，即minScale
         indicateLine = Utils.dip2px(mContext, 60);
     }
@@ -81,6 +83,7 @@ public class TimeLineView extends ScrollView {
     private List<Integer> list;//存放的大刻度
     private int scrollHour = -1;
     private String currentTime;
+    private int screenWidth;
 
     /**
      * 数据的初始化
@@ -88,19 +91,22 @@ public class TimeLineView extends ScrollView {
      * @param map
      * @param list
      * @param currentTime
+     * @param screenWidth
      */
-    public void initData(Map<Integer, Integer> map, List<Integer> list, String currentTime) {
+    public void initData(Map<Integer, Integer> map, List<Integer> list, String currentTime, int screenWidth) {
         this.currentTime = currentTime;
         this.list = list;
         this.map = map;
+        this.screenWidth = screenWidth;
+
+        setPisodeColor();
         setScaleLine();
         setScale();
+        setBitmap();
         addView(container);
 
         topPos = map.get(0) - indicateLine;
         bottomPos = map.get(24) - indicateLine;
-
-//        String time ="2017-11-1 12:00:00";
 
         String[] currentTimeSplit = currentTime.split(" ");
         currentDate = currentTimeSplit[0];
@@ -114,7 +120,7 @@ public class TimeLineView extends ScrollView {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                scrollTo(0, (int) firstScrollPos);
+                smoothScrollTo(0, (int) firstScrollPos);
             }
         }, 200);
         scrollHour = firsthour;
@@ -161,6 +167,68 @@ public class TimeLineView extends ScrollView {
             }
             container.addView(mView);
             mView = null;
+        }
+    }
+
+    private List<TimeDataBean> pisodeList = new ArrayList<>();
+
+    /**
+     * 设置时间段的背景色
+     */
+    private void setPisodeColor() {
+        for (int i = 0; i < 5; i++) {
+            TimeDataBean bean = new TimeDataBean();
+            bean.setStartTime(currentDate + " " + "0" + i + ":30:10");
+            bean.setEndTime(currentDate + " " + "0" + (i + 1) + ":20:45");
+            pisodeList.add(bean);
+        }
+
+        for (int i = 0; i < pisodeList.size(); i++) {
+            TimeDataBean bean = pisodeList.get(i);
+            String startTime = bean.getStartTime();
+            String[] startSplit = startTime.split(" ")[1].split(":");
+            String endTime = bean.getEndTime();
+            String[] endSplit = endTime.split(" ")[1].split(":");
+
+            float startPos = getPostionByTime(Integer.parseInt(startSplit[0]), Integer.parseInt(startSplit[1]), Integer.parseInt(startSplit[2]));
+            float endPos = getPostionByTime(Integer.parseInt(endSplit[0]), Integer.parseInt(endSplit[1]), Integer.parseInt(endSplit[2]));
+            float disPos = endPos - startPos;
+
+            View view = new View(getContext());
+            FrameLayout.LayoutParams params = new LayoutParams(screenWidth, (int) disPos);
+            params.topMargin = (int) (startPos + indicateLine);
+            view.setLayoutParams(params);
+
+            view.setBackgroundColor(getResources().getColor(R.color.colorPisode));
+            container.addView(view);
+        }
+    }
+
+    /**
+     * 添加图片
+     */
+    private void setBitmap() {
+        for (int i = 0; i < 5; i++) {
+            TimeDataBean bean = new TimeDataBean();
+            bean.setStartTime(currentDate + " " + "0" + i + ":30:10");
+            bean.setEndTime(currentDate + " " + "0" + (i + 1) + ":20:45");
+            pisodeList.add(bean);
+        }
+
+        for (int i = 0; i < pisodeList.size(); i++) {
+            TimeDataBean bean = pisodeList.get(i);
+            String startTime = bean.getStartTime();
+            String[] startSplit = startTime.split(" ")[1].split(":");
+
+            float startPos = getPostionByTime(Integer.parseInt(startSplit[0]), Integer.parseInt(startSplit[1]), Integer.parseInt(startSplit[2]));
+            ImageView iv = new ImageView(getContext());
+            FrameLayout.LayoutParams params = new LayoutParams(screenWidth / 4, minScale);
+            params.leftMargin = screenWidth / 2;
+            params.topMargin = (int) (startPos + indicateLine);
+            iv.setLayoutParams(params);
+            iv.setScaleType(ImageView.ScaleType.FIT_XY);
+            iv.setImageResource(R.mipmap.avs_type_default);
+            container.addView(iv);
         }
     }
 

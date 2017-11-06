@@ -22,6 +22,8 @@ public class MainActivity extends AppCompatActivity {
     private List<Integer> list;
     private TimeLineView timeLineView;
     private TextView tv_time;
+    private int screenWidth;
+    private int screenHeight;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
         mContext = this;
         initView();
         initData();
+        setTimeLineData();
         setListener();
     }
 
@@ -49,10 +52,16 @@ public class MainActivity extends AppCompatActivity {
         list.add(10);
         list.add(22);
         list.add(23);
+
+        screenWidth = getWindowManager().getDefaultDisplay().getWidth();
+        screenHeight = getWindowManager().getDefaultDisplay().getHeight();
+    }
+
+    private void setTimeLineData() {
         //小刻度
         minScale = Utils.dip2px(mContext, 60);
         //大刻度
-        maxScale = Utils.dip2px(mContext, 200);
+        maxScale = Utils.dip2px(mContext, 300);
         //指示线距离顶部的位置,与0点距离顶部的高度一致，即minScale
         indicateLine = Utils.dip2px(mContext, 60);
 
@@ -69,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         String currentTime = Utils.stampToDate(System.currentTimeMillis());
-        timeLineView.initData(map, list,currentTime);
+        timeLineView.initData(map, list, currentTime,screenWidth);
     }
 
     private void setListener() {
